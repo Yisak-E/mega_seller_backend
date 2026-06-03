@@ -6,7 +6,9 @@ import com.megaseller.entity.*;
 import com.megaseller.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,10 @@ public class TicketService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ThreadMetricsService metricsService;
+
+    @Autowired
+    @Lazy
+    private TicketService self;
 
     @Value("${megaseller.ticket.lock-timeout-ms:2000}")
     private long lockTimeoutMs;
@@ -95,7 +101,7 @@ public class TicketService {
 
             // Execute the DB transaction under the application lock
             metricsService.updateState(threadId, ThreadState.PROCESSING_DB_TRANSACTION);
-            TicketDto.BuyResponse result = executeTicketPurchase(userId, request.getShowtimeId(),
+            TicketDto.BuyResponse result = self.executeTicketPurchase(userId, request.getShowtimeId(),
                 request.getPreferredSeatRow(), request.getPreferredSeatNumber());
 
             if (result.isSuccess()) {
@@ -126,7 +132,7 @@ public class TicketService {
      * FR3: Updates specific ticket row from AVAILABLE -> SOLD.
      */
     @Transactional
-    protected TicketDto.BuyResponse executeTicketPurchase(Long userId, Long showtimeId,
+    public TicketDto.BuyResponse executeTicketPurchase(Long userId, Long showtimeId,
                                                            String preferredRow, Integer preferredSeat) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
