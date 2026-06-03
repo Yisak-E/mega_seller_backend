@@ -26,7 +26,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 @RestController
 @RequestMapping("/api/admin")
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
@@ -53,6 +52,7 @@ public class AdminController {
     /**
      * SSE endpoint: streams thread state snapshots to admin clients — FR5.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/metrics-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamMetrics() {
         SseEmitter emitter = new SseEmitter(0L); // no timeout
@@ -75,6 +75,7 @@ public class AdminController {
     /**
      * SSE endpoint: streams inventory counts to admin clients.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/inventory-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamInventory() {
         SseEmitter emitter = new SseEmitter(0L);
@@ -133,11 +134,13 @@ public class AdminController {
     }
 
     // REST endpoint for one-shot metrics (non-SSE)
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/metrics")
     public MetricsDto.MetricsSnapshot getMetrics() {
         return metricsService.getSnapshot();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/inventory")
     public List<TicketDto.InventorySnapshot> getInventory() {
         return ticketService.getInventorySnapshots();
