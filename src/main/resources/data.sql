@@ -1,0 +1,2 @@
+-- Seed data is handled via DataSeeder.java (Spring component)
+-- This file intentionally left minimal; schema is auto-created by Hibernate
